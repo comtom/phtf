@@ -13,16 +13,16 @@
         <link rel='shortcut icon' type='image/x-icon' href='/static/favicon.ico' />
         <link rel="apple-touch-icon" href="apple-touch-icon.png">
         <!-- Social SHARE image -->
-        <link rel="image_src" type="image/jpeg" href="images/share.png">
+        <link rel="image_src" type="image/jpeg" href="/static/images/share.png">
         <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
 
         <meta name="description" content="">
         <meta name="keywords" content="">
-        <link rel="stylesheet" href="/css/normalize.css">
-        <link rel="stylesheet" href="/css/main.css">
-        <link rel="stylesheet" href="/css/semantic.min.css">
-        <link rel="stylesheet" href="/css/bootstrap-datetimepicker.css">
-        <script src="/js/vendor/modernizr-2.6.2.min.js"></script>
+        <link rel="stylesheet" href="/static/css/normalize.css">
+        <link rel="stylesheet" href="/static/css/main.css">
+        <link rel="stylesheet" href="/static/css/semantic.min.css">
+        <link rel="stylesheet" href="/static/css/bootstrap-datetimepicker.css">
+        <script src="/static/js/vendor/modernizr-2.6.2.min.js"></script>
         <style>
         .ui.feed a {
           cursor: pointer;
@@ -104,8 +104,8 @@
         <!-- contenido -->
         <?php echo $contenido ?>
 
-        <script src="/js/vendor/jquery-1.10.2.min.js"></script>
-        <script src="/js/semantic.js"></script>
+        <script src="/static/js/vendor/jquery-1.10.2.min.js"></script>
+        <script src="/static/js/semantic.js"></script>
 
         <script>
             $('.ui.dropdown')

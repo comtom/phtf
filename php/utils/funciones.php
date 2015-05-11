@@ -39,27 +39,51 @@ function view($nombre) {
 // fecha y hora
 // ------------------------------------
 
-function fechahoraDisplay($fecha) {
-  $fecha = DateTime::createFromFormat('Y-m-d H:i:s', $fecha);
-  return 'Publicado el '. $fecha->format('d/m/Y') .' a las '. $fecha->format('H:i');
+function datetimeDisplay($fecha) {
+    global $config;
+    //$fecha = DateTime::createFromFormat('Y-m-d H:i:s', $fecha);
+    $fecha = new DateTime($fecha);
+    return $fecha->format($config['datetime_format']);
 }
 
 
-function fechahoraDB($fecha) {
-  $fecha = DateTime::createFromFormat('d/m/Y H:i', $fecha);
-  return $fecha->format('Y-m-d H:i:s');
+function datetimeToDB($fecha) {
+    global $config;
+    //$fecha = DateTime::createFromFormat($config['datetime_format'], $fecha);
+    $fecha = new DateTime($fecha);
+    return $fecha->format('Y-m-d H:i:s');
 }
 
 
-function fechaDisplay($fecha) {
-  $fecha = DateTime::createFromFormat('Y-m-d', $fecha);
-  return @$fecha->format('d/m/Y');
+function datetimeDiff($fecha1, $fecha2){
+    $fecha1 = new DateTime($fecha1);
+    $fecha2 = new DateTime($fecha2);
+
+    $interval = $fecha1->diff($fecha2);
+    return intval($interval->format('%R%a'));
+}
+
+function datetimeDiffToday($fecha){
+    $fecha1 = new DateTime($fecha);
+    $fecha2 = new DateTime();
+    
+    $interval = $fecha1->diff($fecha2);
+    return intval($interval->format('%R%a'));
+}
+
+function dateDisplay($fecha) {
+    global $config;
+    //$fecha = DateTime::createFromFormat('Y-m-d', $fecha);
+    $fecha = new DateTime($fecha);
+    return @$fecha->format($config['date_format']);
 }
 
 
-function fechaDB($fecha) {
-  $fecha = DateTime::createFromFormat('d/m/Y', $fecha);
-  return $fecha->format('Y-m-d');
+function dateToDB($fecha) {
+    global $config;
+    $fecha = DateTime::createFromFormat($config['date_format'], $fecha);
+    
+    return $fecha->format('Y-m-d');
 }
 
 
@@ -67,26 +91,79 @@ function fechaDB($fecha) {
 // misc
 // ------------------------------------
 
-function getGenero($id) {
-    if ($id==1) {
-        return 'Masculino';
-    } elseif ($id==2) {
-        return 'Femenino';
-    } elseif ($id==3) {
-        return '';
-    } else {
-        return False;
+function escape_string($data) {
+    /*
+        limpia datos que se enviaran a consultas SQL
+    */
+
+    // valores nullos o vacios
+    if ( !isset($data) or empty($data) ) return '';
+
+    // valores numericos
+    if ( is_numeric($data) ) return $data;
+
+    // valores booleanos
+    if ( $data === True ) {
+        return 1;
+    } elseif ( $data === False ) {
+        return 0;
     }
+
+    // valores string
+    $non_displayables = array(
+        '/%0[0-8bcef]/',            // url encoded 00-08, 11, 12, 14, 15
+        '/%1[0-9a-f]/',             // url encoded 16-31
+        '/[\x00-\x08]/',            // 00-08
+        '/\x0b/',                   // 11
+        '/\x0c/',                   // 12
+        '/[\x0e-\x1f]/'             // 14-31
+    );
+    foreach ( $non_displayables as $regex )
+    $data = preg_replace( $regex, '', $data );
+    $data = str_replace("'", "&#39;", $data );
+    $data = str_replace("ñ", "&ntilde;", $data );
+    $data = str_replace("Ñ", "&Ntilde;", $data );
+
+    // reemplazo de sintaxis SQL
+    $data = str_replace("/*", "", $data );
+    $data = str_replace("*/", "", $data );
+    $data = str_replace("--", "", $data );
+
+    $data = str_replace("%", "&#37;", $data );
+    $data = str_ireplace (" or ", " ", $data );
+    $data = str_ireplace (" and ", " ", $data );
+    $data = str_ireplace (" waitfor delay ", " ", $data );
+    return $data;
 }
 
+function sendEmail($asunto='HELLO', $cuerpo='HELLO', $destinatario_email='123@example.com', $destinatario_nombre='DEFAULT NAME') {
+    global $config;
+    require_once $config['path'] .'/utils/mandrill/Mandrill.php';
+    $mandrill = new Mandrill($config['token_mandrill']);
 
-function getFotoPerfil($id) {
-  global $config;
-  $imagen = $config['media'] .'/perfil/'. $id .'.jpg';
+    $raw_message = 'From: '. $config[''] .'
+To:'. $destinatario_email .'
+Reply-To: '. $config['email_address'] .'
+X-Mailer: PHP'. phpversion() .' 
+Subject: '. $asunto .'
 
-  if (file_exists($imagen)) {
-    return '/perfil/'. $id .'.jpg';
-  } else {
-    return '/perfil/nopic.png';
-  }
+'. $cuerpo;
+
+    $from_email = $config['email_address'];
+    $from_name = $config['email_name'];
+    $to = array(
+      "email" => $destinatario_email, 
+      "name" => $destinatario_nombre,
+      "type" => "to"
+      );
+
+    $async = false;
+    @$result = $mandrill->messages->sendRaw($raw_message, $from_email, $from_name, $to, $async, null, null, null);
+
+    // verifica si hubo errores al enviar el email
+    if (!$result) {
+        return False;
+    } else {
+        return True;
+    }
 }
