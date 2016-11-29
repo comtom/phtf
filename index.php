@@ -5,13 +5,13 @@ session_start();
 include 'config.php';
 
 // load exceptions handler
-include 'utils/errores.php';
+include 'utils/errors.php';
 
 // load database conection
 include 'utils/db.php';
 
 // load functions
-include 'utils/funciones.php';
+include 'utils/functions.php';
 
 // set locales
 setlocale(LC_ALL, $config['locale']);
