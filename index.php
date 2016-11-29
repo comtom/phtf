@@ -13,6 +13,27 @@ include 'utils/db.php';
 // load functions
 include 'utils/funciones.php';
 
+// set locales
+setlocale(LC_ALL, $config['locale']);
+
+// set max execution time
+set_time_limit($config['maxExecTime']);
+
+// system locales
+date_default_timezone_set($config['timeZone']);
+
+// cache expiration
+$cache_expiration_time = $config['cache_expiration_time'];
+$fecha = date('D, d M Y H:i:s', strtotime("+2 hours +$cache_expiration_time seconds"));;
+header('Expires: '. $fecha .' GMT');
+
+// template may vary if user is logged in
+if (isset($_SESSION['logueado']) and $_SESSION['logueado']) {
+    $_SESSION['template_base'] = $config['baseLoggedTemplate'];
+} else {
+    $_SESSION['template_base'] = $config['baseTemplate'];
+}
+
 // parse url, detect view from url and set params array
 $query = parse_url($_SERVER['REQUEST_URI']);
 
@@ -42,7 +63,7 @@ for ($i=2; $i<=5; $i++) {
 
 // show selected view or show default if there is no session 
 if (trim($view)=='' or trim($view)=='/') {
-    // vista por defecto
+    // set default view
     if (isset($_SESSION['logueado'])) {
         $default = $config['defaultLoggedView'];
     } else {

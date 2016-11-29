@@ -31,13 +31,5 @@ $config['email_name'] = 'System notification';
 
 // public views
 $vistasPublicas = array(
-    '/example',
     'example',
 );
-
-// template may vary if user is logged in
-if (isset($_SESSION['logueado'])) {
-    $_SESSION['template_base'] = 'base';
-} else {
-    $_SESSION['template_base'] = 'base';
-}
